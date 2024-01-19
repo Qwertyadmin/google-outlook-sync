@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="Ribbon_Load">
+	<ribbon>
+		<tabs>
+			<tab idMso="TabAppointment">
+				<group id="calendarSyncGroupInspector" insertBeforeMso="GroupActions" label="Google Calendar">
+					<splitButton id="createOEventSplitButtonInspector" size="large" showLabel="true">
+						<button id="createOEventButtonInspector" onAction="CreateOEventButton" screentip="Salva l'evento su Google Calendar nel calendario predefinito" label="Salva e chiudi" imageMso="SaveAndClose" />
+						<menu id="createOEventMenuInspector" itemSize="normal">
+							<button id="createOEventMenuButtonInspector" onAction="CreateOEventMenuButton" screentip="Salva l'evento su Google Calendar nel calendario selezionato" label="Salva in un altro calendario" imageMso="SaveAndClose" />
+						</menu>
+					</splitButton>
+					<button id="deleteOEventButtonInspector" onAction="DeleteOEventButton" screentip="Elimina l'evento da Google Calendar" label="Elimina" size="large" imageMso="Delete" />
+				</group>
+			</tab>
+			<tab idMso="TabContact">
+				<group id="addressBookSyncGroupInspector" insertBeforeMso="GroupActions" label="Google Contacts">
+					<button id="createOContactButtonInspector" onAction="CreateOContactButton" screentip="Salva il contatto su Google Contacts" label="Salva e chiudi" size="large" imageMso="SaveAndClose" />
+					<button id="deleteOContactButtonInspector" onAction="DeleteOContactButton" screentip="Elimina il contatto da Google Contacts" label="Elimina" size="large" imageMso="Delete" />
+				</group>
+			</tab>
+			<tab idMso="TabContacts">
+				<group id="addressBookSyncGroupExplorer" insertBeforeMso="GroupContactsNew" label="Google Contacts">
+					<button id="deleteOContactButtonExplorer" onAction="DeleteOContactButton" screentip="Elimina il contatto da Google Contacts" label="Elimina" size="large" imageMso="Delete" />
+				</group>
+			</tab>
+			<tab id="syncTab" label="Google Sync" insertAfterMso="TabView">
+				<group id="syncGroup" label="Sincronizzazione">
+					<button id="calendarSyncButton" onAction="CalendarSyncButton" screentip="Sincronizza il calendario" label="Calendario" size="large" imageMso="NewAppointment" />
+					<button id="addressBookSyncButton" onAction="AddressBookSyncButton" screentip="Sincronizza la rubrica" label="Rubrica" size="large" imageMso="AddressBook" />
+				</group>
+				<group id="resetGroup" label="Ripristino">
+					<button id="calendarResetButton" onAction="CalendarResetButton" screentip="Rimuovi tutti i calendari sincronizzati ed esegui una sincronizzazione completa" label="Calendario" size="large" imageMso="RemoveFromCalendar" />
+					<button id="addressBookResetButton" onAction="AddressBookResetButton" screentip="Rimuovi tutti i contatti sincronizzati ed esegui una sincronizzazione completa" label="Rubrica" size="large" imageMso="JunkEmailAddToBlockedSendersList" />
+				</group>
+				<group id="logGroup" label="Strumenti">
+					<button id="LogButton" onAction="ShowLogButton" screentip="Visualizza i log dell'add-in" label="Log" size="large" imageMso="ControlToolboxOutlook" />
+				</group>
+			</tab>
+		</tabs>
+		<contextualTabs>
+			<tabSet idMso="TabSetAppointment">
+				<tab idMso="TabAppointment">
+					<group id="calendarSyncGroupExplorer" insertBeforeMso="GroupAppointmentActions" label="Google Calendar">
+						<button id="deleteOEventButtonExplorer" onAction="DeleteOEventButton" screentip="Elimina l'evento da Google Calendar" label="Elimina" size="large" imageMso="Delete" />
+					</group>
+				</tab>
+			</tabSet>
+		</contextualTabs>
+	</ribbon>
+</customUI>
+
