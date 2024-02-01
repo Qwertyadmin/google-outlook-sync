@@ -60,6 +60,7 @@ namespace googleSync
 			catch(System.Exception error)
             {
 				WriteLog("ERROR: " + error);
+				MessageBox.Show("Si è verificato un errore. Consulta il log per ulteriori dettagli.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 

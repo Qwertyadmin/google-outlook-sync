@@ -4,6 +4,7 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.PeopleService.v1;
 using System.Collections.Generic;
+using System.Windows.Forms;
 
 
 namespace googleSync
@@ -53,6 +54,7 @@ namespace googleSync
             catch (System.Exception error)
             {
 				syncClass.WriteLog("ERROR: " + error);
+                MessageBox.Show("Si è verificato un errore. Consulta il log per ulteriori dettagli.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 		}
 

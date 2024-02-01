@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
-using System.Xml;
 
 namespace googleSync
 {
@@ -13,38 +14,28 @@ namespace googleSync
             string varPath = @"%AppData%\Google Account - Microsoft Outlook Sync";
             string path = Environment.ExpandEnvironmentVariables(varPath);
             Directory.SetCurrentDirectory(path);
-            XmlDocument calendarData = new XmlDocument();
-            calendarData.Load("calendarData.xml");
-            XmlNode xmlRoot = calendarData.FirstChild;
-            foreach (XmlNode xCal in xmlRoot)
+            ArrayList comboBoxItems = new ArrayList();
+            foreach (KeyValuePair<string, GCalendar> calendar in ThisAddIn.calendars)
             {
-                if (xCal.Attributes[3].Value != "reader")
+                if (calendar.Value.AccessRole != "reader")
                 {
-                    calendarComboBox.Items.Add(xCal.Attributes[2].Value);
+                    comboBoxItems.Add(new ComboBoxItem(calendar));
                 }
             }
-            calendarComboBox.Text = calendarComboBox.Items[0].ToString();
+            this.calendarComboBox.DataSource = comboBoxItems;
         }
 
         private void saveButton_Click(object sender, EventArgs e)
         {
             SyncClass syncClass = new SyncClass();
-            XmlDocument calendarData = new XmlDocument();
-            calendarData.Load("calendarData.xml");
-            XmlNode xmlRoot = calendarData.FirstChild;
-            foreach (XmlNode xCal in xmlRoot)
+            try
             {
-                if (xCal.Attributes[2].Value == calendarComboBox.SelectedItem.ToString())
-                {
-                    try
-                    {
-                        syncClass.CreateOEvent(ThisAddIn.calendarService, ThisAddIn.oStore, xCal.Attributes[1].Value);
-                    }
-                    catch (Exception error)
-                    {
-                        syncClass.WriteLog("ERROR: " + error);
-                    }
-                }
+                syncClass.CreateOEvent(ThisAddIn.calendarService, ThisAddIn.oStore, ThisAddIn.calendars, calendarComboBox.SelectedValue.ToString());
+            }
+            catch (Exception error)
+            {
+                syncClass.WriteLog("ERROR: " + error);
+                MessageBox.Show("Si è verificato un errore. Consulta il log per ulteriori dettagli.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             Close();
         }
@@ -52,6 +43,32 @@ namespace googleSync
         private void cancelButton_Click(object sender, EventArgs e)
         {
             Close();
+        }
+    }
+
+    public class ComboBoxItem
+    {
+        private KeyValuePair<string, GCalendar> item;
+
+        public ComboBoxItem(KeyValuePair<string, GCalendar> item)
+        {
+            this.item = item;
+        }
+
+        public string Name
+        {
+            get
+            {
+                return item.Value.GName;
+            }
+        }
+
+        public string Value
+        {
+            get
+            {
+                return item.Key;
+            }
         }
     }
 }

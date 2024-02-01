@@ -47,11 +47,14 @@ namespace googleSync
             // 
             // calendarComboBox
             // 
+            this.calendarComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.calendarComboBox.FormattingEnabled = true;
             this.calendarComboBox.Location = new System.Drawing.Point(12, 41);
             this.calendarComboBox.Name = "calendarComboBox";
             this.calendarComboBox.Size = new System.Drawing.Size(218, 21);
             this.calendarComboBox.TabIndex = 2;
+            this.calendarComboBox.DisplayMember = "Name";
+            this.calendarComboBox.ValueMember = "Value";
             // 
             // saveButton
             // 

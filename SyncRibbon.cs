@@ -44,6 +44,7 @@ namespace googleSync
             catch (Exception error)
             {
                 syncClass.WriteLog("ERROR: " + error);
+                MessageBox.Show("Si è verificato un errore. Consulta il log per ulteriori dettagli.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -63,6 +64,7 @@ namespace googleSync
             catch (Exception error)
             {
                 syncClass.WriteLog("ERROR: " + error);
+                MessageBox.Show("Si è verificato un errore. Consulta il log per ulteriori dettagli.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -76,7 +78,8 @@ namespace googleSync
 			catch (Exception error)
 			{
 				syncClass.WriteLog("ERROR: " + error);
-			}
+                MessageBox.Show("Si è verificato un errore. Consulta il log per ulteriori dettagli.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 		}
 
 		public void DeleteOContactButton(Office.IRibbonControl control)
@@ -89,7 +92,8 @@ namespace googleSync
 			catch (Exception error)
 			{
 				syncClass.WriteLog("ERROR: " + error);
-			}
+                MessageBox.Show("Si è verificato un errore. Consulta il log per ulteriori dettagli.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 		}
 
 		public void CalendarSyncButton(Office.IRibbonControl control)
@@ -102,7 +106,8 @@ namespace googleSync
 			catch (Exception error)
 			{
 				syncClass.WriteLog("ERROR: " + error);
-			}
+                MessageBox.Show("Si è verificato un errore. Consulta il log per ulteriori dettagli.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 		}
 
 		public void AddressBookSyncButton(Office.IRibbonControl control)
@@ -115,7 +120,8 @@ namespace googleSync
 			catch (Exception error)
 			{
 				syncClass.WriteLog("ERROR: " + error);
-			}
+                MessageBox.Show("Si è verificato un errore. Consulta il log per ulteriori dettagli.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 		}
 
 		public void CalendarResetButton(Office.IRibbonControl control)
@@ -128,7 +134,8 @@ namespace googleSync
 			catch (Exception error)
 			{
 				syncClass.WriteLog("ERROR: " + error);
-			}
+                MessageBox.Show("Si è verificato un errore. Consulta il log per ulteriori dettagli.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 		}
 
 		public void AddressBookResetButton(Office.IRibbonControl control)
@@ -147,7 +154,8 @@ namespace googleSync
 			catch (Exception error)
 			{
 				syncClass.WriteLog("ERROR: " + error);
-			}
+                MessageBox.Show("Si è verificato un errore. Consulta il log per ulteriori dettagli.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 		}
 
 		public void ShowLogButton(Office.IRibbonControl control)
@@ -160,7 +168,8 @@ namespace googleSync
 			catch (Exception error)
 			{
 				syncClass.WriteLog("ERROR: " + error);
-			}
+				MessageBox.Show("Si è verificato un errore. Consulta il log per ulteriori dettagli.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 		}
 		#endregion
 
