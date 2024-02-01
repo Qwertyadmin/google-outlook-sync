@@ -3,16 +3,33 @@
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.PeopleService.v1;
+using System.Collections.Generic;
 
 
 namespace googleSync
 {
-	public partial class ThisAddIn
+
+    public class GCalendar
+    {
+        public GCalendar(string gName, string accessRole, string token)
+        {
+            this.GName = gName;
+            this.AccessRole = accessRole;
+            this.Token = token;
+        }
+
+        public string GName { get; set; }
+        public string AccessRole { get; set; }
+        public string Token { get; set; }
+    }
+
+    public partial class ThisAddIn
 	{
 		UserCredential credential;
 		public static CalendarService calendarService;
 		public static Store oStore;
 		public static PeopleServiceService addressBookService;
+        public static Dictionary<string, GCalendar> calendars;
 
         protected override Microsoft.Office.Core.IRibbonExtensibility CreateRibbonExtensibilityObject()
         {
@@ -27,9 +44,10 @@ namespace googleSync
 			{
 				oStore = syncClass.GetOStore();
 				credential = syncClass.Login();
-				calendarService = syncClass.CalendarInit(credential, calendarService);
+				calendars = syncClass.GetCalendarsDictionary();
+				calendarService = syncClass.CalendarInit(credential);
 				addressBookService = syncClass.AddressBookInit(credential, addressBookService);
-				syncClass.CalendarSync(calendarService, oStore);
+				syncClass.CalendarSync(calendarService, oStore, calendars);
 				syncClass.AddressBookSync(addressBookService, oStore);
             }
             catch (System.Exception error)

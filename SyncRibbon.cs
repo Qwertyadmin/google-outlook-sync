@@ -39,7 +39,7 @@ namespace googleSync
             SyncClass syncClass = new SyncClass();
             try
             {
-                syncClass.CreateOEvent(ThisAddIn.calendarService, ThisAddIn.oStore, "primary");
+                syncClass.CreateOEvent(ThisAddIn.calendarService, ThisAddIn.oStore, ThisAddIn.calendars, "primary");
             }
             catch (Exception error)
             {
@@ -58,7 +58,7 @@ namespace googleSync
             SyncClass syncClass = new SyncClass();
             try
             {
-                syncClass.DeleteOEvent(ThisAddIn.calendarService, ThisAddIn.oStore);
+                syncClass.DeleteOEvent(ThisAddIn.calendarService, ThisAddIn.oStore, ThisAddIn.calendars);
             }
             catch (Exception error)
             {
@@ -97,7 +97,7 @@ namespace googleSync
 			SyncClass syncClass = new SyncClass();
             try
             {
-                syncClass.CalendarSync(ThisAddIn.calendarService, ThisAddIn.oStore);
+                syncClass.CalendarSync(ThisAddIn.calendarService, ThisAddIn.oStore, ThisAddIn.calendars);
             }
 			catch (Exception error)
 			{
@@ -123,7 +123,7 @@ namespace googleSync
 			SyncClass syncClass = new SyncClass();
             try
             {
-                syncClass.CalendarReset(ThisAddIn.calendarService, ThisAddIn.oStore);
+                syncClass.CalendarReset(ThisAddIn.calendarService, ThisAddIn.oStore, ThisAddIn.calendars);
             }
 			catch (Exception error)
 			{
