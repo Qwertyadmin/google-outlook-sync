@@ -47,7 +47,7 @@ namespace googleSync
 				credential = syncClass.Login();
 				calendars = syncClass.GetCalendarsDictionary();
 				calendarService = syncClass.CalendarInit(credential);
-				addressBookService = syncClass.AddressBookInit(credential, addressBookService);
+				addressBookService = syncClass.AddressBookInit(credential);
 				syncClass.CalendarSync(calendarService, oStore, calendars);
 				syncClass.AddressBookSync(addressBookService, oStore);
             }

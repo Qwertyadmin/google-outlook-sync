@@ -143,14 +143,8 @@ namespace googleSync
 			SyncClass syncClass = new SyncClass();
             try
             {
-				DialogResult result = MessageBox.Show("Vuoi rimuovere tutti i contatti ed eseguire una sincronizzazione completa? Tutti i contatti non sincronizzati con Google andranno persi.", "Attenzione", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
-				if (result == DialogResult.OK)
-				{
-					syncClass.AddressBookReset(ThisAddIn.addressBookService, ThisAddIn.oStore);
-					syncClass.AddressBookSync(ThisAddIn.addressBookService, ThisAddIn.oStore);
-					MessageBox.Show("Processo completato.", "Processo completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
-				}
-			}
+                syncClass.AddressBookReset(ThisAddIn.addressBookService, ThisAddIn.oStore);
+            }
 			catch (Exception error)
 			{
 				syncClass.WriteLog("ERROR: " + error);
