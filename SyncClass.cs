@@ -16,7 +16,6 @@ using Google.Apis.PeopleService.v1.Data;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using Newtonsoft.Json;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace googleSync
 
@@ -65,6 +64,7 @@ namespace googleSync
                     {
                         if (store.FilePath == (Environment.ExpandEnvironmentVariables(varPath) + "\\googleSync.pst"))
                         {
+                            store.GetRootFolder().Name = "Google Sync";
                             store.GetDefaultFolder(OlDefaultFolders.olFolderDeletedItems).UserDefinedProperties.Add("gId", OlUserPropertyType.olText, OlUserPropertyType.olText);
                         }
                     }
@@ -253,7 +253,7 @@ namespace googleSync
                     WriteLog("Event found");
                     if (gEventItem.Status != "cancelled")
                     {
-                        WriteLog("Updating appointment with id " + gEventItem.Id);
+                        WriteLog("Updating appointment with id {0}", gEventItem.Id);
                         oEventItem.Subject = gEventItem.Summary;
                         oEventItem.Location = gEventItem.Location;
                         oEventItem.Body = gEventItem.Description;
@@ -276,7 +276,7 @@ namespace googleSync
                     }
                     else if (gEventItem.Status == "cancelled")
                     {
-                        WriteLog("Deleting appointment with id " + gEventItem.Id);
+                        WriteLog("Deleting appointment with id {0}", gEventItem.Id);
                         oEventItem.Delete();
                         oEventItem = oCalBin.Items.Find(filter);
                         oEventItem?.Delete();
@@ -287,7 +287,7 @@ namespace googleSync
                     if (gEventItem.Status != "cancelled")
                     {
                         oEventItem = oCal.Items.Add(OlItemType.olAppointmentItem) as AppointmentItem;
-                        WriteLog("Creating appointment with id " + gEventItem.Id);
+                        WriteLog("Creating appointment with id {0}", gEventItem.Id);
 
                         oEventItem.UserProperties.Add("gId", OlUserPropertyType.olText, true, OlUserPropertyType.olText).Value = gEventItem.Id;
                         oEventItem.UserProperties.Add("gCalId", OlUserPropertyType.olText, true, OlUserPropertyType.olText).Value = gCalId;
@@ -364,12 +364,17 @@ namespace googleSync
             }
             else if (Globals.ThisAddIn.Application.ActiveExplorer() != null)
             {
+                if (Globals.ThisAddIn.Application.ActiveExplorer().Selection.Count > 1)
+                {
+                    MessageBox.Show("Non puoi eliminare più di un evento per volta.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
                 oEventItem = Globals.ThisAddIn.Application.ActiveExplorer().Selection[1];
             }
             string id = oEventItem.UserProperties["gId"].Value;
             string calId = oEventItem.UserProperties["gCalId"].Value;
             WriteLog("Event with id {0} deleted. Syncing with Google...", id);
-            _ = calendarService.Events.Delete(calId, id).Execute();
+            calendarService.Events.Delete(calId, id).Execute();
             CalendarSync(calendarService, oStore, calendars);
         }
 
@@ -531,14 +536,14 @@ namespace googleSync
 
                         if (deleted)
                         {
-                            WriteLog("Deleting contact with id: " + person.ResourceName);
+                            WriteLog("Deleting contact with id {0}", person.ResourceName);
                             oContactItem.Delete();
                             oContactItem = oAbBin.Items.Find(filter);
                             oContactItem?.Delete();
                         }
                         else
                         {
-                            WriteLog("Updating contact with id: " + person.ResourceName);
+                            WriteLog("Updating contact with id {0}", person.ResourceName);
                             oContactItem = PopulateContactFields(oContactItem, person);
                             oContactItem.Save();
                         }
@@ -551,7 +556,7 @@ namespace googleSync
                         }
                         if (!deleted)
                         {
-                            WriteLog("Adding contact with id: " + person.ResourceName);
+                            WriteLog("Adding contact with id {0}", person.ResourceName);
                             oContactItem = contactItem ?? (ContactItem)Globals.ThisAddIn.Application.CreateItem(OlItemType.olContactItem);
                             oContactItem.UserProperties.Add("gId", OlUserPropertyType.olText, true, OlUserPropertyType.olText);
                             oContactItem.UserProperties.Add("gETag", OlUserPropertyType.olText, true, OlUserPropertyType.olText);
@@ -1038,7 +1043,7 @@ namespace googleSync
 
         public void DeleteOContact(PeopleServiceService addressBookService, Store oStore)
         {
-            ContactItem oContact = null;
+            ContactItem oContact;
             Folder oAb = null;
 
             List<string> resourceNames = null;
