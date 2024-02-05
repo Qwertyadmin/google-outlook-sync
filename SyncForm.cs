@@ -25,7 +25,7 @@ namespace googleSync
             this.calendarComboBox.DataSource = comboBoxItems;
         }
 
-        private void saveButton_Click(object sender, EventArgs e)
+        private void SaveButton_Click(object sender, EventArgs e)
         {
             SyncClass syncClass = new SyncClass();
             try
@@ -40,7 +40,7 @@ namespace googleSync
             Close();
         }
 
-        private void cancelButton_Click(object sender, EventArgs e)
+        private void CancelButton_Click(object sender, EventArgs e)
         {
             Close();
         }

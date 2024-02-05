@@ -64,7 +64,7 @@ namespace googleSync
             this.saveButton.TabIndex = 3;
             this.saveButton.Text = "Salva";
             this.saveButton.UseVisualStyleBackColor = true;
-            this.saveButton.Click += new System.EventHandler(this.saveButton_Click);
+            this.saveButton.Click += new System.EventHandler(this.SaveButton_Click);
             // 
             // cancelButton
             // 
@@ -75,7 +75,7 @@ namespace googleSync
             this.cancelButton.TabIndex = 4;
             this.cancelButton.Text = "Annulla";
             this.cancelButton.UseVisualStyleBackColor = true;
-            this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
+            this.cancelButton.Click += new System.EventHandler(this.CancelButton_Click);
             // 
             // SyncForm
             // 
