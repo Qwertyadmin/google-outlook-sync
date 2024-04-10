@@ -154,35 +154,70 @@ namespace googleSync
             WriteLog("Syncing calendars");
 
             Folder oCalMain = (Folder)oStore.GetDefaultFolder(OlDefaultFolders.olFolderCalendar);
+            Folder oCalBin = (Folder)oStore.GetDefaultFolder(OlDefaultFolders.olFolderDeletedItems);
 
             Folder newCal;
 
+            GCalendar jCalendar;
+
             CalendarListResource.ListRequest gCalRequest = calendarService.CalendarList.List();
+            gCalRequest.ShowDeleted = true;
             CalendarList gCalList = gCalRequest.Execute();
 
             foreach (CalendarListEntry gCalItem in gCalList.Items)
             {
-                bool isOCalPresent = false;
                 WriteLog("Calendar {0}, ID {1}", gCalItem.Summary, gCalItem.Id);
 
-                foreach (Folder personalCalendar in oCalMain.Folders)
-                {
-                    if (personalCalendar.Name.Contains(gCalItem.Summary))
-                    {
-                        isOCalPresent = true;
-                        break;
-                    }
-                }
-                if (!isOCalPresent)
-                {
-                    newCal = (Folder)oCalMain.Folders.Add(gCalItem.Summary, OlDefaultFolders.olFolderCalendar);
-                    newCal.UserDefinedProperties.Add("gId", OlUserPropertyType.olText, OlUserPropertyType.olText);
-                    newCal.UserDefinedProperties.Add("gCalId", OlUserPropertyType.olText, OlUserPropertyType.olText);
-                }
+                bool gCalDeleted = gCalItem.Deleted != null && (bool)gCalItem.Deleted;
+                calendars.TryGetValue(gCalItem.Id, out jCalendar);
 
-                if (!calendars.ContainsKey(gCalItem.Id))
+                if (gCalDeleted && jCalendar != null)
                 {
-                    calendars.Add(gCalItem.Id, new GCalendar(gCalItem.Summary, gCalItem.AccessRole, ""));
+                    string jCalName = jCalendar.GName;
+                    WriteLog("Deleting calendar {0}, ID {1}", jCalName, gCalItem.Id);
+
+                    foreach (Folder personalCalendar in oCalMain.Folders)
+                    {
+                        if (personalCalendar.Name.Contains(calendars[gCalItem.Id].GName))
+                        {
+                            personalCalendar.Delete();
+                            break;
+                        }
+                    }
+
+                    foreach (Folder personalCalendar in oCalBin.Folders)
+                    {
+                        if (personalCalendar.Name.Contains(calendars[gCalItem.Id].GName))
+                        {
+                            personalCalendar.Delete();
+                        }
+                    }
+
+                    calendars.Remove(gCalItem.Id);
+                }
+                else if (!gCalDeleted)
+                {
+                    bool isOCalPresent = false;
+
+                    foreach (Folder personalCalendar in oCalMain.Folders)
+                    {
+                        if (personalCalendar.Name.Contains(gCalItem.Summary))
+                        {
+                            isOCalPresent = true;
+                            break;
+                        }
+                    }
+                    if (!isOCalPresent)
+                    {
+                        newCal = (Folder)oCalMain.Folders.Add(gCalItem.Summary, OlDefaultFolders.olFolderCalendar);
+                        newCal.UserDefinedProperties.Add("gId", OlUserPropertyType.olText, OlUserPropertyType.olText);
+                        newCal.UserDefinedProperties.Add("gCalId", OlUserPropertyType.olText, OlUserPropertyType.olText);
+                    }
+
+                    if (!calendars.ContainsKey(gCalItem.Id))
+                    {
+                        calendars.Add(gCalItem.Id, new GCalendar(gCalItem.Summary, gCalItem.AccessRole, ""));
+                    }
                 }
             }
 
@@ -214,7 +249,19 @@ namespace googleSync
                     gEventRequest = calendarService.Events.List(calendar.Key);
                     gEventRequest.SyncToken = calendar.Value.Token;
                     gEventRequest.SingleEvents = true;
-                    gEvents = gEventRequest.Execute();
+                    try
+                    {
+                        gEvents = gEventRequest.Execute();
+                    }
+                    catch (System.Exception)
+                    {
+                        WriteLog("Sync token for calendar {0} expired", calendar.Value.GName);
+                        gEventRequest = calendarService.Events.List(calendar.Key);
+                        gEventRequest.ShowDeleted = false;
+                        gEventRequest.SingleEvents = true;
+                        gEvents = gEventRequest.Execute();
+                    }
+                    
                 }
 
                 EventsSync(gEvents, oCalendar, oStore, calendar.Key);
@@ -234,7 +281,7 @@ namespace googleSync
 
             }
 
-            File.WriteAllText("calendarData.json", JsonConvert.SerializeObject(calendars, Newtonsoft.Json.Formatting.Indented));
+            File.WriteAllText("calendarData.json", JsonConvert.SerializeObject(calendars, Formatting.Indented));
 
         }
 
@@ -244,10 +291,12 @@ namespace googleSync
             Folder oCalBin = (Folder)oStore.GetDefaultFolder(OlDefaultFolders.olFolderDeletedItems);
             string filter;
             AppointmentItem oEventItem;
+            Items restricted;
             foreach (Google.Apis.Calendar.v3.Data.Event gEventItem in gEvents.Items)
             {
                 filter = "[gId] = '" + gEventItem.Id + "'";
-                oEventItem = oCal.Items.Find(filter);
+                restricted = oCal.Items.Restrict(filter);
+                oEventItem = (restricted.Count != 0) ? restricted[1] : null;
                 if (oEventItem != null)
                 {
                     WriteLog("Event found");
@@ -257,6 +306,7 @@ namespace googleSync
                         oEventItem.Subject = gEventItem.Summary;
                         oEventItem.Location = gEventItem.Location;
                         oEventItem.Body = gEventItem.Description;
+                        oEventItem.BusyStatus = (gEventItem.Transparency == null || gEventItem.Transparency.Contains("opaque")) ? OlBusyStatus.olBusy : OlBusyStatus.olFree;
                         if (gEventItem.Start.DateTimeDateTimeOffset is DateTimeOffset)
                         {
                             oEventItem.Start = DateTime.Parse(gEventItem.Start.DateTimeRaw);
@@ -294,6 +344,7 @@ namespace googleSync
                         oEventItem.Subject = gEventItem.Summary;
                         oEventItem.Location = gEventItem.Location;
                         oEventItem.Body = gEventItem.Description;
+                        oEventItem.BusyStatus = (gEventItem.Transparency == null || gEventItem.Transparency.Contains("opaque")) ? OlBusyStatus.olBusy : OlBusyStatus.olFree;
                         if (gEventItem.Start.DateTimeDateTimeOffset is DateTimeOffset)
                         {
                             oEventItem.Start = DateTime.Parse(gEventItem.Start.DateTimeRaw);
@@ -323,8 +374,9 @@ namespace googleSync
             AppointmentItem oEvent = Globals.ThisAddIn.Application.ActiveInspector().CurrentItem;
 
             gEventRequest.Summary = oEvent.Subject;
-            gEventRequest.Description = oEvent.Body;
             gEventRequest.Location = oEvent.Location;
+            gEventRequest.Description = oEvent.Body;
+            gEventRequest.Transparency = (oEvent.BusyStatus == OlBusyStatus.olBusy) ? "opaque" : "transparent";
             if (oEvent.AllDayEvent)
             {
                 gEventStart.Date = (oEvent.Start.Date.Year + "-" + oEvent.Start.Date.Month + "-" + oEvent.Start.Date.Day);
