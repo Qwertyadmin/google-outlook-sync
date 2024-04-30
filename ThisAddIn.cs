@@ -12,16 +12,18 @@ namespace googleSync
 
     public class GCalendar
     {
-        public GCalendar(string gName, string accessRole, string token)
+        public GCalendar(string gName, string accessRole, string token, int[] reminders)
         {
             this.GName = gName;
             this.AccessRole = accessRole;
             this.Token = token;
+            this.Reminders = reminders;
         }
 
         public string GName { get; set; }
         public string AccessRole { get; set; }
         public string Token { get; set; }
+		public int[] Reminders { get; set; }
     }
 
     public partial class ThisAddIn

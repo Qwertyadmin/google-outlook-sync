@@ -160,6 +160,8 @@ namespace googleSync
 
             GCalendar jCalendar;
 
+            List<int> remindersList = new List<int>();
+
             CalendarListResource.ListRequest gCalRequest = calendarService.CalendarList.List();
             gCalRequest.ShowDeleted = true;
             CalendarList gCalList = gCalRequest.Execute();
@@ -216,7 +218,16 @@ namespace googleSync
 
                     if (!calendars.ContainsKey(gCalItem.Id))
                     {
-                        calendars.Add(gCalItem.Id, new GCalendar(gCalItem.Summary, gCalItem.AccessRole, ""));
+                        remindersList.Clear();
+                        foreach (EventReminder reminder in gCalItem.DefaultReminders)
+                        {
+                            if (reminder.Method.Contains("popup"))
+                            {
+                                remindersList.Add((int)reminder.Minutes);
+                            }
+                        }
+
+                        calendars.Add(gCalItem.Id, new GCalendar(gCalItem.Summary, gCalItem.AccessRole, "", remindersList.ToArray()));
                     }
                 }
             }
@@ -264,7 +275,7 @@ namespace googleSync
                     
                 }
 
-                EventsSync(gEvents, oCalendar, oStore, calendar.Key);
+                EventsSync(gEvents, oCalendar, oStore, calendar.Key, calendar.Value.Reminders);
 
                 while (gEvents.NextPageToken != null)
                 {
@@ -273,7 +284,7 @@ namespace googleSync
                     gEventRequest.SingleEvents = true;
                     gEventRequest.PageToken = gEvents.NextPageToken;
                     gEvents = gEventRequest.Execute();
-                    EventsSync(gEvents, oCalendar, oStore, calendar.Key);
+                    EventsSync(gEvents, oCalendar, oStore, calendar.Key, calendar.Value.Reminders);
                 }
 
                 WriteLog("Writing sync token for calendar {0}: {1}", calendar.Value.GName, gEvents.NextSyncToken);
@@ -285,7 +296,7 @@ namespace googleSync
 
         }
 
-        private void EventsSync(Events gEvents, Folder oCal, Store oStore, string gCalId)
+        private void EventsSync(Events gEvents, Folder oCal, Store oStore, string gCalId, int[] gCalReminders)
         {
             WriteLog("Number of events: {0}", gEvents.Items.Count());
             Folder oCalBin = (Folder)oStore.GetDefaultFolder(OlDefaultFolders.olFolderDeletedItems);
@@ -303,24 +314,8 @@ namespace googleSync
                     if (gEventItem.Status != "cancelled")
                     {
                         WriteLog("Updating appointment with id {0}", gEventItem.Id);
-                        oEventItem.Subject = gEventItem.Summary;
-                        oEventItem.Location = gEventItem.Location;
-                        oEventItem.Body = gEventItem.Description;
-                        oEventItem.BusyStatus = (gEventItem.Transparency == null || gEventItem.Transparency.Contains("opaque")) ? OlBusyStatus.olBusy : OlBusyStatus.olFree;
-                        if (gEventItem.Start.DateTimeDateTimeOffset is DateTimeOffset)
-                        {
-                            oEventItem.Start = DateTime.Parse(gEventItem.Start.DateTimeRaw);
-                            oEventItem.End = DateTime.Parse(gEventItem.End.DateTimeRaw);
-                            oEventItem.AllDayEvent = false;
-                            oEventItem.ReminderOverrideDefault = false;
-                        }
-                        else
-                        {
-                            oEventItem.Start = DateTime.Parse(gEventItem.Start.Date);
-                            oEventItem.End = DateTime.Parse(gEventItem.Start.Date).AddHours(23).AddMinutes(59).AddSeconds(59);
-                            oEventItem.AllDayEvent = true;
-                            oEventItem.ReminderSet = false;
-                        }
+                        
+                        oEventItem = PopulateAppointmentFields(oEventItem, gEventItem, gCalReminders);
 
                         oEventItem.Save();
                     }
@@ -341,29 +336,59 @@ namespace googleSync
 
                         oEventItem.UserProperties.Add("gId", OlUserPropertyType.olText, true, OlUserPropertyType.olText).Value = gEventItem.Id;
                         oEventItem.UserProperties.Add("gCalId", OlUserPropertyType.olText, true, OlUserPropertyType.olText).Value = gCalId;
-                        oEventItem.Subject = gEventItem.Summary;
-                        oEventItem.Location = gEventItem.Location;
-                        oEventItem.Body = gEventItem.Description;
-                        oEventItem.BusyStatus = (gEventItem.Transparency == null || gEventItem.Transparency.Contains("opaque")) ? OlBusyStatus.olBusy : OlBusyStatus.olFree;
-                        if (gEventItem.Start.DateTimeDateTimeOffset is DateTimeOffset)
-                        {
-                            oEventItem.Start = DateTime.Parse(gEventItem.Start.DateTimeRaw);
-                            oEventItem.End = DateTime.Parse(gEventItem.End.DateTimeRaw);
-                            oEventItem.AllDayEvent = false;
-                            oEventItem.ReminderOverrideDefault = false;
-                        }
-                        else
-                        {
-                            oEventItem.Start = DateTime.Parse(gEventItem.Start.Date);
-                            oEventItem.End = DateTime.Parse(gEventItem.Start.Date).AddHours(23).AddMinutes(59).AddSeconds(59);
-                            oEventItem.AllDayEvent = true;
-                            oEventItem.ReminderSet = false;
-                        }
+
+                        oEventItem = PopulateAppointmentFields(oEventItem, gEventItem, gCalReminders);
 
                         oEventItem.Save();
                     }
                 }
             }
+        }
+
+        private AppointmentItem PopulateAppointmentFields (AppointmentItem oEvent, Google.Apis.Calendar.v3.Data.Event gEvent, int[] gCalReminders)
+        {
+            oEvent.Subject = gEvent.Summary;
+            oEvent.Location = gEvent.Location;
+            oEvent.Body = gEvent.Description;
+            oEvent.BusyStatus = (gEvent.Transparency == null || gEvent.Transparency.Contains("opaque")) ? OlBusyStatus.olBusy : OlBusyStatus.olFree;
+            if (gEvent.Start.DateTimeDateTimeOffset is DateTimeOffset)
+            {
+                oEvent.Start = DateTime.Parse(gEvent.Start.DateTimeRaw);
+                oEvent.End = DateTime.Parse(gEvent.End.DateTimeRaw);
+                oEvent.AllDayEvent = false;
+            }
+            else
+            {
+                oEvent.Start = DateTime.Parse(gEvent.Start.Date);
+                oEvent.End = DateTime.Parse(gEvent.Start.Date).AddHours(23).AddMinutes(59).AddSeconds(59);
+                oEvent.AllDayEvent = true;
+            }
+            oEvent.ReminderSet = false;
+            if (gEvent.Reminders != null && DateTime.Compare(oEvent.Start.AddDays(1.0), DateTime.Now) >= 0)
+            {
+                if ((bool)gEvent.Reminders.UseDefault && gCalReminders != null)
+                {
+                    if (gCalReminders.Length != 0)
+                    {
+                        oEvent.ReminderSet = true;
+                        oEvent.ReminderMinutesBeforeStart = gCalReminders[0];
+                    }
+                }
+                else if (!(bool)gEvent.Reminders.UseDefault && gEvent.Reminders.Overrides != null)
+                {
+                    foreach (EventReminder reminder in gEvent.Reminders.Overrides)
+                    {
+                        if (reminder.Method.Contains("popup"))
+                        {
+                            oEvent.ReminderSet = true;
+                            oEvent.ReminderMinutesBeforeStart = (int)reminder.Minutes;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return oEvent;
         }
 
         public void CreateOEvent(CalendarService calendarService, Store oStore, Dictionary<string, GCalendar> calendars, string gId)
@@ -551,8 +576,8 @@ namespace googleSync
                     listRequest.PersonFields = "addresses,emailAddresses,genders,locales,metadata,names,nicknames,occupations,organizations,phoneNumbers,photos,relations";
                     listRequest.PageSize = 1000;
                     listRequest.RequestSyncToken = true;
-                listResponse = listRequest.Execute();
-            }
+                    listResponse = listRequest.Execute();
+                }
             }
 
             ContactsSync(listResponse.Connections, newAb, oStore);
