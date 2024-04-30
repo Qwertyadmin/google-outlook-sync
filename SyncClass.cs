@@ -540,7 +540,19 @@ namespace googleSync
                 listRequest.PageSize = 1000;
                 listRequest.RequestSyncToken = true;
                 listRequest.SyncToken = tokenData.Token;
+                try
+                {
+                    listResponse = listRequest.Execute();
+                }
+                catch (System.Exception)
+                {
+                    WriteLog("Sync token for address book expired");
+                    listRequest = peopleResource.Connections.List("people/me");
+                    listRequest.PersonFields = "addresses,emailAddresses,genders,locales,metadata,names,nicknames,occupations,organizations,phoneNumbers,photos,relations";
+                    listRequest.PageSize = 1000;
+                    listRequest.RequestSyncToken = true;
                 listResponse = listRequest.Execute();
+            }
             }
 
             ContactsSync(listResponse.Connections, newAb, oStore);
@@ -568,6 +580,7 @@ namespace googleSync
                 WriteLog("Number of contacts: {0}", gContacts.Count);
                 Folder oAbBin = (Folder)oStore.GetDefaultFolder(OlDefaultFolders.olFolderDeletedItems);
                 ContactItem oContactItem = null;
+                Items restricted;
                 string filter;
                 bool deleted = false;
 
@@ -576,7 +589,8 @@ namespace googleSync
                     filter = "[gId] = '" + person.ResourceName + "'";
                     if (contactItem == null)
                     {
-                        oContactItem = oAb.Items.Find(filter);
+                        restricted = oAb.Items.Restrict(filter);
+                        oContactItem = (restricted.Count != 0) ? restricted[1] : null; 
                     }
                     if (oContactItem != null)
                     {
