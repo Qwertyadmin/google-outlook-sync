@@ -313,7 +313,7 @@ namespace googleSync
                     WriteLog("Event found");
                     if (gEventItem.Status != "cancelled")
                     {
-                        WriteLog("Updating appointment with id {0}", gEventItem.Id);
+                        WriteLog("Updating event with id {0}", gEventItem.Id);
                         
                         oEventItem = PopulateAppointmentFields(oEventItem, gEventItem, gCalReminders);
 
@@ -321,7 +321,7 @@ namespace googleSync
                     }
                     else if (gEventItem.Status == "cancelled")
                     {
-                        WriteLog("Deleting appointment with id {0}", gEventItem.Id);
+                        WriteLog("Deleting event with id {0}", gEventItem.Id);
                         oEventItem.Delete();
                         oEventItem = oCalBin.Items.Find(filter);
                         oEventItem?.Delete();
@@ -332,7 +332,7 @@ namespace googleSync
                     if (gEventItem.Status != "cancelled")
                     {
                         oEventItem = oCal.Items.Add(OlItemType.olAppointmentItem) as AppointmentItem;
-                        WriteLog("Creating appointment with id {0}", gEventItem.Id);
+                        WriteLog("Creating event with id {0}", gEventItem.Id);
 
                         oEventItem.UserProperties.Add("gId", OlUserPropertyType.olText, true, OlUserPropertyType.olText).Value = gEventItem.Id;
                         oEventItem.UserProperties.Add("gCalId", OlUserPropertyType.olText, true, OlUserPropertyType.olText).Value = gCalId;
@@ -434,24 +434,36 @@ namespace googleSync
 
         public void DeleteOEvent(CalendarService calendarService, Store oStore, Dictionary<string, GCalendar> calendars)
         {
-            AppointmentItem oEventItem = null;
+            string id, calId;
             if (Globals.ThisAddIn.Application.ActiveInspector() != null)
             {
-                oEventItem = Globals.ThisAddIn.Application.ActiveInspector().CurrentItem;
+                AppointmentItem oEvent = Globals.ThisAddIn.Application.ActiveInspector().CurrentItem;
+                if (oEvent.UserProperties["gId"] != null)
+                {
+                    id = oEvent.UserProperties["gId"].Value;
+                    calId = oEvent.UserProperties["gCalId"].Value;
+                    WriteLog("Event with id {0} deleted. Syncing with Google...", id);
+                    calendarService.Events.Delete(calId, id).Execute();
+                    Globals.ThisAddIn.Application.ActiveInspector().Close(OlInspectorClose.olDiscard);
+                }
+                else
+                {
+                    MessageBox.Show("Questo non è un evento sincronizzato con Google Calendar.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
             else if (Globals.ThisAddIn.Application.ActiveExplorer() != null)
             {
-                if (Globals.ThisAddIn.Application.ActiveExplorer().Selection.Count > 1)
+                foreach (AppointmentItem oEventItem in Globals.ThisAddIn.Application.ActiveExplorer().Selection)
                 {
-                    MessageBox.Show("Non puoi eliminare più di un evento per volta.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
+                    if (oEventItem.UserProperties["gId"] != null)
+                    {
+                        id = oEventItem.UserProperties["gId"].Value;
+                        calId = oEventItem.UserProperties["gCalId"].Value;
+                        WriteLog("Event with id {0} deleted. Syncing with Google...", id);
+                        calendarService.Events.Delete(calId, id).Execute();
+                    }
                 }
-                oEventItem = Globals.ThisAddIn.Application.ActiveExplorer().Selection[1];
             }
-            string id = oEventItem.UserProperties["gId"].Value;
-            string calId = oEventItem.UserProperties["gCalId"].Value;
-            WriteLog("Event with id {0} deleted. Syncing with Google...", id);
-            calendarService.Events.Delete(calId, id).Execute();
             CalendarSync(calendarService, oStore, calendars);
         }
 

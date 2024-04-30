@@ -10,18 +10,18 @@
 							<button id="createOEventMenuButtonInspector" onAction="CreateOEventMenuButton" screentip="Salva l'evento su Google Calendar nel calendario selezionato" label="Salva in un altro calendario" imageMso="SaveAndClose" />
 						</menu>
 					</splitButton>
-					<button id="deleteOEventButtonInspector" onAction="DeleteOEventButton" screentip="Elimina l'evento da Google Calendar" label="Elimina" size="large" imageMso="Delete" />
+					<button id="deleteOEventButtonInspector" onAction="DeleteOEventButton" screentip="Elimina l'evento da Google Calendar" label="Elimina" size="large" imageMso="EmptyTrash" />
 				</group>
 			</tab>
 			<tab idMso="TabContact">
 				<group id="addressBookSyncGroupInspector" insertBeforeMso="GroupActions" label="Google Contacts">
 					<button id="createOContactButtonInspector" onAction="CreateOContactButton" screentip="Salva il contatto su Google Contacts" label="Salva e chiudi" size="large" imageMso="SaveAndClose" />
-					<button id="deleteOContactButtonInspector" onAction="DeleteOContactButton" screentip="Elimina il contatto da Google Contacts" label="Elimina" size="large" imageMso="Delete" />
+					<button id="deleteOContactButtonInspector" onAction="DeleteOContactButton" screentip="Elimina il contatto da Google Contacts" label="Elimina" size="large" imageMso="EmptyTrash" />
 				</group>
 			</tab>
 			<tab idMso="TabContacts">
 				<group id="addressBookSyncGroupExplorer" insertBeforeMso="GroupContactsNew" label="Google Contacts">
-					<button id="deleteOContactButtonExplorer" onAction="DeleteOContactButton" screentip="Elimina il contatto da Google Contacts" label="Elimina" size="large" imageMso="Delete" />
+					<button id="deleteOContactButtonExplorer" onAction="DeleteOContactButton" screentip="Elimina il contatto da Google Contacts" label="Elimina" size="large" imageMso="EmptyTrash" />
 				</group>
 			</tab>
 			<tab id="syncTab" label="Google Sync" insertAfterMso="TabView">
@@ -42,11 +42,16 @@
 			<tabSet idMso="TabSetAppointment">
 				<tab idMso="TabAppointment">
 					<group id="calendarSyncGroupExplorer" insertBeforeMso="GroupAppointmentActions" label="Google Calendar">
-						<button id="deleteOEventButtonExplorer" onAction="DeleteOEventButton" screentip="Elimina l'evento da Google Calendar" label="Elimina" size="large" imageMso="Delete" />
+						<button id="deleteOEventButtonExplorer" onAction="DeleteOEventButton" screentip="Elimina l'evento da Google Calendar" label="Elimina" size="large" imageMso="EmptyTrash" />
 					</group>
 				</tab>
 			</tabSet>
 		</contextualTabs>
 	</ribbon>
+	<contextMenus>
+		<contextMenu idMso="ContextMenuMultipleItems">
+			<button id="deleteOEventButtonContext" onAction="DeleteOEventButton" label="Elimina da Google Calendar" imageMso="EmptyTrash" />
+		</contextMenu>
+	</contextMenus>
 </customUI>
 
