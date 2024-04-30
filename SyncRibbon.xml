@@ -31,7 +31,7 @@
 				</group>
 				<group id="resetGroup" label="Ripristino">
 					<button id="calendarResetButton" onAction="CalendarResetButton" screentip="Rimuovi tutti i calendari sincronizzati ed esegui una sincronizzazione completa" label="Calendario" size="large" imageMso="RemoveFromCalendar" />
-					<button id="addressBookResetButton" onAction="AddressBookResetButton" screentip="Rimuovi tutti i contatti sincronizzati ed esegui una sincronizzazione completa" label="Rubrica" size="large" imageMso="JunkEmailAddToBlockedSendersList" />
+					<button id="addressBookResetButton" onAction="AddressBookResetButton" screentip="Rimuovi tutti i contatti sincronizzati ed esegui una sincronizzazione completa" label="Rubrica" size="large" imageMso="RemoveOutlookAccount" />
 				</group>
 				<group id="logGroup" label="Strumenti">
 					<button id="LogButton" onAction="ShowLogButton" screentip="Visualizza i log dell'add-in" label="Log" size="large" imageMso="ControlToolboxOutlook" />

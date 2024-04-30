@@ -272,18 +272,6 @@
     <None Include="Resources\saveCal.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="deleteAB.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="deleteCal.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="saveAB.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="saveCal.png" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="calendarData.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
